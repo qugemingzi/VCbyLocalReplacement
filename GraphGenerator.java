@@ -39,21 +39,37 @@ public class GraphGenerator {
     }
 
     /**
+     * 返回当前度数为3满足的点集，随机生成时不用考虑这些点
+     * @param i 顶点i，只考虑顶点i之后的顶点
+     * @return 顶点集合
+     */
+    HashSet<Integer> getFullDegree(int i){
+        HashSet<Integer> set = new HashSet<>();
+        for(int j = i + 1; j <= n; j++){
+            if(getCurrentDegree(j) >= 3)
+                set.add(j);
+        }
+        return set;
+    }
+
+    /**
      * 生成[min, max]区间中number个随机数
      * @param min 区间最小值
      * @param max 区间最大值
      * @param numbers 随机数个数
      * @param set 随机数集合
+     * @param full 之后顶点度数已经到达3的顶点集合
      * @return 返回生成的随机数集合
      */
-    HashSet<Integer> randomSet(int min, int max, int numbers, HashSet<Integer> set){
+    HashSet<Integer> randomSet(int min, int max, int numbers, HashSet<Integer> set, HashSet<Integer> full){
         if(min > max)
             return set;
         int randNumber;
         while(set.size() < numbers){
             // 生成[min, max]内的随机数
             randNumber = (int)(Math.random() * (max-min+1)) + min;
-            set.add(randNumber);
+            if(!full.contains(randNumber)) // 甄别已经满度的顶点
+                set.add(randNumber);
         }
 
         return set;
@@ -79,9 +95,10 @@ public class GraphGenerator {
     boolean generator(){
         for(int i = 1; i <= n; i++){
             int randomNumbers = 3 - getCurrentDegree(i);
-            if(n-i < randomNumbers || randomNumbers < 0){
+            HashSet<Integer> full = getFullDegree(i);
+            if(n-i-full.size() < randomNumbers || randomNumbers < 0){
                 // 构造错误
-                System.out.println("generator() WRONG!");
+//                System.out.println("generator() WRONG!");
                 // 打印邻接矩阵，检查一哈
 //                printAdjacentMatrix();
                 // 刷新一下
@@ -89,7 +106,7 @@ public class GraphGenerator {
                 return false;
             }
             HashSet<Integer> set = new HashSet<>();
-            set = randomSet(i+1, n, randomNumbers, set);
+            set = randomSet(i+1, n, randomNumbers, set, full);
             addEdge(i, set);
         }
 
@@ -158,17 +175,30 @@ public class GraphGenerator {
         }
 
         GraphGenerator gg;
-        for(int i = 6; i <= 30; i=i+2) {
-            gg = new GraphGenerator(i);
-            System.out.println("v = " + i);
-            boolean flag = true;
-            while (flag) {
-                if (gg.generator()) {
-                    gg.writeInFile(file, i);
-                    gg.printAdjacentMatrix();
-                    flag = false;
+        int i, j = 0; // i为顶点个数，j控制每个例子生成sampleNumbers个随机图
+        int sampleNumbers = 10; // 每个顶点数生成sampleNumbers个随机图
+        for(i = 6; i <= 1000; ) {
+            if(j == sampleNumbers){
+                if (i < 50) { // 少于50顶点的步长为2
+                    i += 2;
+                } else if(i < 100) { // [50, 100]区间的步长为10
+                    i += 10;
+                }else{ // [100, 1000]区间的步长为100
+                    i += 100;
+                }
+            }else {
+                gg = new GraphGenerator(i);
+                System.out.println("v = " + i);
+                boolean flag = true; // 判断随机图是否生成成功
+                while (flag) {
+                    if (gg.generator()) {
+                        gg.writeInFile(file, i);
+                        gg.printAdjacentMatrix();
+                        flag = false;
+                    }
                 }
             }
+            j = (j+1)%(sampleNumbers+1);
         }
     }
 }
