@@ -13,7 +13,7 @@ public class GraphGenerator {
      * n = 4, 顶点个数为4
      **/
     GraphGenerator(){
-        n = 4;
+        n = 6;
         adjacentMatrix = new int[n + 1][n + 1];
     }
 
@@ -108,6 +108,8 @@ public class GraphGenerator {
             HashSet<Integer> set = new HashSet<>();
             set = randomSet(i+1, n, randomNumbers, set, full);
             addEdge(i, set);
+            set.clear();
+            full.clear();
         }
 
         return true;
@@ -126,6 +128,14 @@ public class GraphGenerator {
     }
 
     /**
+     * 返回邻接矩阵
+     * @return 邻接矩阵
+     */
+    int[][] getAdjacentMatrix(){
+        return adjacentMatrix;
+    }
+
+    /**
      * 刷新邻接矩阵
      */
     void flush(){
@@ -138,12 +148,13 @@ public class GraphGenerator {
      * 将随机生成的顶点数为v的3-正则图写入指定文件中
      * @param file 文件
      * @param v 顶点个数
+     * @param num 编号
      */
-    void writeInFile(File file, int v){
+    void writeInFile(File file, int v, int num){
         Writer writer = null;
         try{
             writer = new FileWriter(file, true); // true表示追加
-            writer.write(v + "\n");
+            writer.write(v + "+" + num + "\n");
             String str;
             for(int i = 1; i <= n; i++) {
                 str = "";
@@ -192,7 +203,7 @@ public class GraphGenerator {
                 boolean flag = true; // 判断随机图是否生成成功
                 while (flag) {
                     if (gg.generator()) {
-                        gg.writeInFile(file, i);
+                        gg.writeInFile(file, i, j);
                         gg.printAdjacentMatrix();
                         flag = false;
                     }
@@ -200,5 +211,7 @@ public class GraphGenerator {
             }
             j = (j+1)%(sampleNumbers+1);
         }
+
     }
+
 }
