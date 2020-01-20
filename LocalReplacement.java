@@ -150,10 +150,11 @@ public class LocalReplacement {
      * 将局部替换方法得到的解写入文件中
      * @param file 文件
      * @param s 标识字符，"v"意为顶点数，"k"意为选k个顶点，
-     *         "r"意为结果，解集覆盖边数，"n"意为换行
+     *         "r"意为结果，解集覆盖边数，"n"意为换行， "a"意为平均值
      * @param num 根据s不同而不同，分别为顶点数、k、覆盖边数、null
+     * @param avg 根据s不同而不同，分别为平均覆盖边数、平均运行时间
      */
-    static void writeInFile(File file, String s, int num){
+    static void writeInFile(File file, String s, int num, double avg){
         Writer writer = null;
         try{
             writer = new FileWriter(file, true); // true表示追加
@@ -165,6 +166,8 @@ public class LocalReplacement {
                 writer.write(num + " ");
             } else if(s.equals("n")){
                 writer.write("\n");
+            } else if(s.equals("a")){
+                writer.write(avg + " ");
             }
         } catch(IOException e){
             e.printStackTrace();
@@ -183,10 +186,11 @@ public class LocalReplacement {
             System.out.println("fileR does not exist!");
         }
 
-        File fileW = new File("D:\\projects\\vertexCover\\src\\LRResult.txt");
-        if(!fileW.exists()){
+        // File fileW = new File("D:\\projects\\vertexCover\\src\\LRResult.txt");
+        File fileW_p = new File("D:\\projects\\vertexCover\\src\\LRResult_p.txt");
+        if(!fileW_p.exists()){
             try{
-                fileW.createNewFile(); // 如果文件不存在则创建文件
+                fileW_p.createNewFile(); // 如果文件不存在则创建文件
             } catch(IOException e){
                 e.printStackTrace();
             }
@@ -196,6 +200,35 @@ public class LocalReplacement {
         HashMap<String, int[][]> map = readFromFile(fileR);
         LocalReplacement lr;
         int i, k, samNum;
+
+        // for plot
+        for(i = 100; i <= 1000;){
+            System.out.println("v = " + i);
+            writeInFile(fileW_p, "v", i, 0.0);
+            for(k = (int)(0.3*i); k <= (int)(0.6*i); k += (int)(0.1*i)){
+                System.out.println("k = " + k);
+                writeInFile(fileW_p, "k", k, 0.0);
+                int avg_r = 0, avg_t = 0;
+                for(samNum = 0; samNum <= 9; samNum++){
+                    System.out.print("samNum = " + samNum + "\t");
+                    long startTime = System.currentTimeMillis(); // 获取开始时间
+                    lr = new LocalReplacement(i, map.get(i+"+"+samNum));
+                    int result = lr.alg(k);
+                    long endTime = System.currentTimeMillis(); // 获取结束时间
+                    writeInFile(fileW_p, "r", result, 0.0);
+                    avg_r += result;
+                    avg_t += (endTime - startTime);
+                    System.out.println("result: " + result);
+                }
+
+                writeInFile(fileW_p, "a", 0, (double)avg_r/10);
+                writeInFile(fileW_p, "a", 0, (double)avg_t/10);
+                writeInFile(fileW_p, "n", 0, 0.0);
+            }
+
+            i += 100;
+        }
+        /**
         for(i = 6; i <= 1000;){
             System.out.println("v = " + i);
             writeInFile(fileW, "v", i);
@@ -229,6 +262,7 @@ public class LocalReplacement {
                 i += 100;
             }
         }
+         **/
 
     }
 
