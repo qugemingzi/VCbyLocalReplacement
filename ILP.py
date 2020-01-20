@@ -1,6 +1,7 @@
 # encoding=utf-8
 import numpy as np
 import pulp
+import time
 
 
 def read_from_file(file):
@@ -114,27 +115,58 @@ class ILP(object):
 
 
 if __name__ == "__main__":
-        fileR = "D:\\projects\\vertexCover\\src\\Rand3RegGraph.txt"
-        fileW = "D:\\projects\\vertexCover\\src\\ILPResult.txt"
+        fileR = "./Rand3RegGraph.txt"
+        # fileW = "D:\\projects\\vertexCover\\src\\ILPResult.txt"
+        fileW_p = "D:\\projects\\vertexCover\\src\\ILPResult_p.txt"
         dic = read_from_file(fileR)
         print(len(dic))
+
+        # for plot
+        i = 100
+        while i <= 1000:
+            print("v = ", i)
+            write_in_file(fileW_p, "v", i)
+            k = int(0.3 * i)
+            while k <= int(0.6 * i):
+                print("k = ", k)
+                write_in_file(fileW_p, "k", k)
+                samNum = 0
+                avg_r = 0
+                avg_t = 0
+                while samNum <= 9:
+                    print("samNum = ", samNum, "\t", end=" ")
+                    startTime = time.time()  # 获取开始时间
+                    ilp = ILP(i, dic[f'{i}+{samNum}'])
+                    result = ilp.opt(k)
+                    endTime = time.time()  # 获取结束时间
+                    write_in_file(fileW_p, "r", result)
+                    avg_r += result
+                    avg_t += endTime - startTime
+                    print("result = ", result)
+                    samNum += 1
+                write_in_file(fileW_p, "r", avg_r/10)
+                write_in_file(fileW_p, "r", round(avg_t*100, 1))
+                write_in_file(fileW_p, "n", 0)
+                k += int(0.1 * i)
+            i += 100
+        '''
         i = 6
         while i <= 1000:
             print("v = ", i)
-            write_in_file(fileW, "v", i)
+            write_in_file(fileW_p, "v", i
             k = int((i+6)/4)
             while k < i-2:
                 print("k = ", k)
-                write_in_file(fileW, "k", k)
+                write_in_file(fileW_p, "k", k)
                 samNum = 0
                 while samNum <= 9:
                     print("samNum = ", samNum, "\t", end=" ")
                     ilp = ILP(i, dic[f'{i}+{samNum}'])
                     result = ilp.opt(k)
                     print("result = ", result)
-                    write_in_file(fileW, "r", result)
+                    write_in_file(fileW_p, "r", result)
                     samNum += 1
-                write_in_file(fileW, "n", 0)
+                write_in_file(fileW_p, "n", 0)
                 if k < 10:
                     k += 1
                 elif k < 30:
@@ -149,5 +181,6 @@ if __name__ == "__main__":
                 i += 10
             else:
                 i += 100
+        '''
 
 
